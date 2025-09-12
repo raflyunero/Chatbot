@@ -1,21 +1,20 @@
-/* static/admin-style.css */
 
 .nav-item {
     display: block;
     padding: 0.75rem 1rem;
     border-radius: 0.5rem;
     font-weight: 500;
-    color: #374151; /* gray-700 */
+    color: #374151; 
     transition: all 0.2s ease;
     background-color: transparent;
   }
   
   .nav-item:hover {
-    background-color: #f3f4f6; /* gray-100 */
+    background-color: #f3f4f6; 
   }
   
   .nav-item.active {
-    background-color: #3b82f6; /* blue-600 */
+    background-color: #3b82f6; 
     color: white;
   }
   
@@ -34,9 +33,9 @@
   .input-field {
     width: 100%;
     padding: 0.5rem 0.75rem;
-    border: 1px solid #d1d5db; /* gray-300 */
+    border: 1px solid #d1d5db; 
     border-radius: 0.5rem;
-    background-color: #f9fafb; /* gray-50 */
+    background-color: #f9fafb; 
     font-size: 0.875rem;
   }
   .input-field:focus {

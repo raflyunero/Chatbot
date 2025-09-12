@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="Chatbot Akademik Universitas Diponegoro (UNDIP) untuk layanan akademik, fakultas, prodi, jadwal kuliah, dan informasi kampus.">
     <title>Chatbot Akademik UNDIP</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -10,22 +11,26 @@
 
   <div class="chatbot-container">
 
+    <!-- Header -->
     <div class="header">
-      <img src="logo.png" alt="Logo UNDIP" style="height: 80px; margin-right: 20px;">
+      <img src="logo.png" alt="Logo Universitas Diponegoro" style="height: 80px; margin-right: 20px;">
       <h1>🎓 Chatbot Akademik UNDIP</h1>
-      <button onclick="clearChat()" class="clear-btn">Clear</button>
+      <button type="button" onclick="clearChat()" class="clear-btn">Clear</button>
     </div>
 
+    <!-- Chat Body -->
     <div id="chatBody" class="chat-body"></div>
 
+    <!-- Input Area -->
     <div class="input-area">
       <input 
         id="userInput"
         type="text" 
         placeholder="Tulis pertanyaan di sini..." 
         onkeydown="handleKey(event)"
+        autocomplete="off"
       />
-      <button onclick="sendMessage()" class="send-btn">Kirim</button>
+      <button type="button" onclick="sendMessage()" class="send-btn">Kirim</button>
     </div>
 
   </div>
@@ -34,4 +39,3 @@
 
 </body>
 </html>
-

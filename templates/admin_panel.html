@@ -17,7 +17,6 @@
         <p class="text-sm text-gray-500">Chatbot Akademik UNDIP</p>
       </div>
       <nav class="flex-1 p-4 space-y-2">
-        <!-- Navigation links -->
         <a href="{{ url_for('dashboard') }}" class="nav-item">📊 Dashboard</a>
         <a href="{{ url_for('monitoring_faq') }}" class="nav-item">📁 Monitoring FAQ</a>
         <a href="{{ url_for('change_password') }}" class="nav-item">🔑 Ganti Password</a>
@@ -28,19 +27,17 @@
       </div>
     </aside>
 
-    <!-- Main Content -->
+    <!-- Main content -->
     <main class="flex-1 overflow-y-auto p-8">
       {% block content %} {% endblock %}
       <div class="max-w-5xl mx-auto space-y-6">
-        <!-- Welcome Section -->
         <div class="text-center">
           <h2 class="text-2xl font-semibold text-blue-700">Selamat Datang Admin!</h2>
           <p class="text-gray-600 mt-2">Kelola dan pantau Chatbot Akademik dari sini.</p>
         </div>
 
-        <!-- Dashboard Section -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <!-- Upcoming Features Card -->
+          <!-- Fitur Mendatang -->
           <div class="card bg-blue-50 border-blue-100">
             <h3 class="text-lg font-semibold text-blue-800">🚧 Fitur Mendatang</h3>
             <p class="text-sm text-gray-700 mt-2">
@@ -48,19 +45,28 @@
             </p>
           </div>
 
-          <!-- Connection Status Card -->
-          <div class="card bg-green-50 border-green-100">
-            <h3 class="text-lg font-semibold text-green-800">✅ Status Koneksi</h3>
-            <p class="text-sm text-700 mt-2">
-              Chatbot aktif dan terhubung ke <strong>OpenAI API</strong> menggunakan API Key yang valid.
+          <!-- Status Koneksi -->
+          <div class="card 
+            {% if zhipu_connected %} bg-green-50 border-green-100 {% else %} bg-red-50 border-red-100 {% endif %}">
+            <h3 class="text-lg font-semibold 
+              {% if zhipu_connected %} text-green-800 {% else %} text-red-800 {% endif %}">
+              {% if zhipu_connected %} ✅ Status Koneksi {% else %} ❌ Status Koneksi {% endif %}
+            </h3>
+            <p class="text-sm mt-2 
+              {% if zhipu_connected %} text-gray-700 {% else %} text-red-700 {% endif %}">
+              {% if zhipu_connected %}
+                Chatbot aktif dan terhubung ke <strong>Zhipu AI API</strong> menggunakan API Key yang valid.
+              {% else %}
+                Chatbot tidak aktif karena API Key tidak valid atau tidak terhubung.
+              {% endif %}
             </p>
           </div>
 
-          <!-- Today's Questions Card -->
+          <!-- Jumlah Pertanyaan Hari Ini -->
           <div class="card bg-yellow-50 border-yellow-100">
             <h3 class="text-lg font-semibold text-yellow-800">🗣️ Jumlah Pertanyaan Hari Ini</h3>
             <p id="questions-today" class="text-xl font-semibold text-gray-800 mt-4">
-              {{ question_count }} <!-- Ini akan diisi dari Flask -->
+              {{ question_count }} 
             </p>
           </div>
         </div>
@@ -69,21 +75,16 @@
   </div>
 
   <script>
-    // Fungsi untuk mengambil jumlah pertanyaan hari ini dari server
     function getQuestionsToday() {
       fetch("/get_questions_today")
         .then(response => response.json())
         .then(data => {
-          // Update jumlah pertanyaan hari ini
           document.getElementById("questions-today").textContent = data.today_question_count;
         })
         .catch(error => console.error("Error fetching data: ", error));
     }
 
-    // Ambil data jumlah pertanyaan hari ini setiap 10 detik
     setInterval(getQuestionsToday, 10000);
-
-    // Panggil langsung saat halaman dimuat
     getQuestionsToday();
   </script>
 
