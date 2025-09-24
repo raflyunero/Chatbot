@@ -1,0 +1,23 @@
+{
+  "judul": "Peraturan Rektor UNDIP Nomor 2 Tahun 2025 tentang Tata Busana",
+  "pasal_4": {
+    "toga": "Toga bagi pimpinan, profesor, SA, MWA, pedel, wisudawan bisa pakai penanda...",
+    "topi": "Topi bisa berbentuk segi lima atau bentuk lain dengan hiasan tali warna fakultas/sekolah.",
+    "samir": "Samir menjuntai depan-belakang, warna sesuai bendera fakultas/sekolah, ada bordir logo Undip di kanan, strip jenjang di kiri.",
+    "warna_fakultas": {
+      "Hukum": "Merah",
+      "Ekonomika dan Bisnis": "Kuning (chrome yellow)",
+      "Teknik": "Biru tua (ultramarine)",
+      "Kedokteran": "Hijau (viridian)",
+      "Peternakan dan Pertanian": "Coklat (brown)",
+      "Ilmu Budaya": "Putih",
+      "FISIP": "Jingga (orange)",
+      "Sains dan Matematika": "Abu-abu (silver grey)",
+      "Kesehatan Masyarakat": "Ungu (violet)",
+      "Perikanan dan Ilmu Kelautan": "Biru muda (ultramarine white)",
+      "Psikologi": "Magenta",
+      "Pascasarjana": "Coklat kemerahan (reddish brown)",
+      "Vokasi": "Coklat khaki"
+    }
+  }
+}

@@ -6,6 +6,188 @@
     <meta name="description" content="Chatbot Akademik Universitas Diponegoro (UNDIP) untuk layanan akademik, fakultas, prodi, jadwal kuliah, dan informasi kampus.">
     <title>Chatbot Akademik UNDIP</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Chat Widget Styles */
+        .chat-widget {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .chat-button {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #006633;
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-button:hover {
+            background-color: #005529;
+            transform: scale(1.05);
+        }
+
+        .chat-container {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
+            width: 350px;
+            height: 500px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background-color: #006633;
+            color: white;
+            padding: 15px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .chat-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message.bot {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            position: relative;
+        }
+
+        .message.user .message-content {
+            background-color: #006633;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.bot .message-content {
+            background-color: white;
+            color: #333;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: #999;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        .message.bot .message-time {
+            text-align: left;
+        }
+
+        .chat-input-container {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+        }
+
+        .chat-input {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 10px 15px;
+            outline: none;
+        }
+
+        .chat-send {
+            background-color: #006633;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            margin-left: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px;
+        }
+
+        .typing-indicator span {
+            height: 10px;
+            width: 10px;
+            background-color: #999;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chat-container {
+                width: 300px;
+                height: 400px;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -35,7 +217,160 @@
 
   </div>
 
+  <!-- Chat Widget -->
+  <div class="chat-widget">
+    <button class="chat-button" id="chatButton">
+      <i class="fas fa-comments"></i>
+    </button>
+    <div class="chat-container" id="chatContainer">
+        <div class="chat-header">
+            <span>Chatbot Akademik UNDIP</span>
+            <button class="chat-close" id="chatClose">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="chat-body" id="widgetChatBody">
+            <div class="message bot">
+                <div>
+                    <div class="message-content">
+                        Halo! Saya adalah chatbot akademik UNDIP. Ada yang bisa saya bantu?
+                    </div>
+                    <div class="message-time">Hari ini, <span id="botTime1"></span></div>
+                </div>
+            </div>
+        </div>
+        <div class="typing-indicator" id="typingIndicator">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" id="widgetChatInput" placeholder="Ketik pesan...">
+            <button class="chat-send" id="widgetChatSend">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+  </div>
+
   <script src="script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set current time for bot message
+        const now = new Date();
+        document.getElementById('botTime1').textContent = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+        
+        // Chat widget functionality
+        const chatButton = document.getElementById('chatButton');
+        const chatContainer = document.getElementById('chatContainer');
+        const chatClose = document.getElementById('chatClose');
+        const widgetChatBody = document.getElementById('widgetChatBody');
+        const widgetChatInput = document.getElementById('widgetChatInput');
+        const widgetChatSend = document.getElementById('widgetChatSend');
+        const typingIndicator = document.getElementById('typingIndicator');
+        
+        // Toggle chat container - membuka dan menutup widget
+        chatButton.addEventListener('click', function() {
+            if (chatContainer.style.display === 'flex') {
+                chatContainer.style.display = 'none';
+            } else {
+                chatContainer.style.display = 'flex';
+                widgetChatInput.focus();
+            }
+        });
+        
+        chatClose.addEventListener('click', function() {
+            chatContainer.style.display = 'none';
+        });
+        
+        // Send message function for widget
+        function sendWidgetMessage() {
+            const message = widgetChatInput.value.trim();
+            if (message === '') return;
+            
+            // Add user message
+            const userMessage = document.createElement('div');
+            userMessage.className = 'message user';
+            userMessage.innerHTML = `
+                <div>
+                    <div class="message-content">${message}</div>
+                    <div class="message-time">Hari ini, ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}</div>
+                </div>
+            `;
+            widgetChatBody.appendChild(userMessage);
+            
+            // Clear input
+            widgetChatInput.value = '';
+            
+            // Scroll to bottom
+            widgetChatBody.scrollTop = widgetChatBody.scrollHeight;
+            
+            // Show typing indicator
+            typingIndicator.style.display = 'block';
+            widgetChatBody.scrollTop = widgetChatBody.scrollHeight;
+            
+            // Send message to backend
+            fetch('/ask', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide typing indicator
+                typingIndicator.style.display = 'none';
+                
+                // Add bot response
+                const botMessage = document.createElement('div');
+                botMessage.className = 'message bot';
+                
+                const botTime = new Date();
+                botMessage.innerHTML = `
+                    <div>
+                        <div class="message-content">${data.reply}</div>
+                        <div class="message-time">Hari ini, ${botTime.getHours().toString().padStart(2, '0')}:${botTime.getMinutes().toString().padStart(2, '0')}</div>
+                    </div>
+                `;
+                widgetChatBody.appendChild(botMessage);
+                
+                // Scroll to bottom
+                widgetChatBody.scrollTop = widgetChatBody.scrollHeight;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                typingIndicator.style.display = 'none';
+                
+                // Add error message
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'message bot';
+                
+                const errorTime = new Date();
+                errorMessage.innerHTML = `
+                    <div>
+                        <div class="message-content">Maaf, terjadi kesalahan saat memproses permintaan Anda.</div>
+                        <div class="message-time">Hari ini, ${errorTime.getHours().toString().padStart(2, '0')}:${errorTime.getMinutes().toString().padStart(2, '0')}</div>
+                    </div>
+                `;
+                widgetChatBody.appendChild(errorMessage);
+                
+                // Scroll to bottom
+                widgetChatBody.scrollTop = widgetChatBody.scrollHeight;
+            });
+        }
+        
+        // Send message on button click
+        widgetChatSend.addEventListener('click', sendWidgetMessage);
+        
+        // Send message on Enter key
+        widgetChatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendWidgetMessage();
+            }
+        });
+    });
+  </script>
 
 </body>
 </html>
