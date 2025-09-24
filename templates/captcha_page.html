@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Form dengan Image CAPTCHA</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    .captcha-img { display: block; margin: 10px 0; }
+    input[type="text"]{ padding:8px; width: 60%; }
+    button{ padding:8px 12px; }
+  </style>
+</head>
+<body>
+  <h1>CAPTCHA</h1>
+  <form method="POST" action="/submit_captcha">
+    <img class="captcha-img" src="/captcha.png" alt="CAPTCHA"><br>
+    <small>Jika gambar sulit dibaca, reload halaman (F5) untuk gambar baru.</small><br><br>
+    <label>Ketik teks dari gambar: <input type="text" name="captcha" required></label><br><br>
+    <button type="submit">Kirim</button>
+  </form>
+</body>
+</html>

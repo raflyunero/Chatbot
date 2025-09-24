@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory, redirect, url_for, session, render_template, flash
+from flask import Flask, request, jsonify, send_from_directory, redirect, url_for, session, render_template, flash, make_response
 from flask_cors import CORS
 from dotenv import load_dotenv
 import bcrypt
@@ -7,6 +7,9 @@ from datetime import datetime, timedelta
 import sqlite3
 import json
 import random
+from io import BytesIO
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
+import string
 
 # Import Zhipu AI
 from zai import ZhipuAiClient
@@ -15,16 +18,14 @@ from zai import ZhipuAiClient
 app = Flask(__name__, static_folder="static", static_url_path='')
 CORS(app)
 load_dotenv()
-app.secret_key = os.getenv("SECRET_KEY", "default_secret")
+app.secret_key = os.getenv("SECRET_KEY", os.urandom(24))
 app.permanent_session_lifetime = timedelta(hours=2)
 
 # ---------------- Credentials & API ---------------- #
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
 ADMIN_HASHED_PASSWORD = os.getenv("ADMIN_HASHED_PASSWORD", "").encode("utf-8")
-
 ZHIPU_API_KEY = os.getenv("ZHIPU_API_KEY")
 client = ZhipuAiClient(api_key=ZHIPU_API_KEY)
-
 
 # ---------------- Load Dataset JSON (Bendera) ---------------- #
 dataset_bendera_data = {}
@@ -75,6 +76,8 @@ def get_today_question_count():
 # ---------------- Helpers ---------------- #
 def verify_password(input_password, stored_hash):
     return bcrypt.checkpw(input_password.encode('utf-8'), stored_hash)
+
+# ---------------- Jawaban Bendera ---------------- #
 jawaban_variasi = [
     "Kalau {fakultas} itu warnanya {warna} bro 🎨😉",
     "Untuk {fakultas}, warna benderanya {warna}, mantap kan!",
@@ -102,7 +105,6 @@ def get_jawaban(fakultas, warna):
     template = random.choice(jawaban_variasi)
     return template.format(fakultas=fakultas, warna=warna)
 
-# ---------------- Dataset Handlers ---------------- #
 def handle_dataset_bendera(message: str):
     msg = message.lower()
     for item in dataset_bendera_data.get("bendera_fakultas", []):
@@ -111,7 +113,6 @@ def handle_dataset_bendera(message: str):
         if nama_fakultas in msg or warna.lower() in msg:
             return get_jawaban(item.get("nama_fakultas", ""), warna)
     return None
-
 
 def handle_zhipu_ai(user_message: str):
     try:
@@ -143,19 +144,109 @@ def get_undip_response(user_message: str):
         return reply
     return handle_zhipu_ai(user_message)
 
-# ---------------- Routes ---------------- #
-@app.route("/")
-def index():
+# ---------------- CAPTCHA ---------------- #
+def random_text(length=5):
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(length))
+
+def generate_captcha_image(text):
+    width, height = 200, 70
+    image = Image.new('RGB', (width, height), (255, 255, 255))
+    draw = ImageDraw.Draw(image)
+    try:
+        font = ImageFont.truetype("arial.ttf", 38)
+    except:
+        font = ImageFont.load_default()
+
+    for i in range(8):
+        start = (random.randint(0, width), random.randint(0, height))
+        end = (random.randint(0, width), random.randint(0, height))
+        draw.line([start, end], fill=(random.randint(100,200), random.randint(100,200), random.randint(100,200)), width=2)
+
+    for i, ch in enumerate(text):
+        char_img = Image.new('RGBA', (50, 60), (255,255,255,0))
+        char_draw = ImageDraw.Draw(char_img)
+        char_draw.text((5,5), ch, font=font, fill=(0,0,0))
+        rotated = char_img.rotate(random.randint(-25,25), expand=1, fillcolor=(255,255,255))
+        x = 20 + i*30 + random.randint(-5,5)
+        y = random.randint(0,10)
+        image.paste(rotated, (x,y), rotated)
+
+    for _ in range(250):
+        x = random.randint(0, width-1)
+        y = random.randint(0, height-1)
+        draw.point((x,y), fill=(random.randint(0,255), random.randint(0,255), random.randint(0,255)))
+
+    image = image.filter(ImageFilter.SMOOTH)
+    return image
+
+@app.route('/submit_captcha', methods=['POST'])
+def submit_captcha():
+    user_answer = request.form.get('captcha', '').strip()
+    real = session.get('captcha_text', '')
+    session.pop('captcha_text', None)
+
+    if user_answer == real and real != '':
+        session['captcha_passed'] = True
+        return redirect(url_for('chatbot_page'))  # route halaman chatbot
+    else:
+        return render_template('captcha_page.html', message="❌ CAPTCHA salah — coba lagi.")
+
+@app.route('/captcha.png')
+def captcha_png():
+    text = random_text(5)
+    session['captcha_text'] = text
+    image = generate_captcha_image(text)
+    buf = BytesIO()
+    image.save(buf, 'PNG')
+    buf.seek(0)
+    response = make_response(buf.read())
+    response.headers['Content-Type'] = 'image/png'
+    response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    return response
+
+@app.route('/chat')
+def chatbot_page():
+    if not session.get('captcha_passed'):
+        flash("⚠️ Kamu harus lolos CAPTCHA dulu!")
+        return redirect(url_for('home'))
     return send_from_directory("static", "index.html")
 
-@app.route("/ask", methods=["POST"])
+
+# ---------------- ROUTES ---------------- #
+@app.route('/')
+def home():
+    # Jika user sudah lolos captcha, redirect ke chatbot
+    if session.get('captcha_verified'):
+        return send_from_directory("static", "index.html")
+    else:
+        return render_template('captcha_page.html')  # Buat file HTML dengan <img src="/captcha.png">
+
+@app.route('/verify_captcha', methods=['POST'])
+def verify_captcha():
+    user_input = request.form.get('captcha', '').strip()
+    real = session.get('captcha_text', '')
+    session.pop('captcha_text', None)
+    if user_input == real and real != '':
+        session['captcha_verified'] = True
+        return redirect(url_for('home'))
+    else:
+        flash("❌ CAPTCHA salah, coba lagi.")
+        return redirect(url_for('home'))
+
+@app.route('/ask', methods=['POST'])
 def ask():
+    if not session.get('captcha_passed'):
+        return jsonify({"reply": "⚠️ Kamu harus lolos CAPTCHA dulu!"})
+
     data = request.get_json()
     user_message = data.get("message", "")
     save_question()
     reply = get_undip_response(user_message)
     return jsonify({"reply": reply})
 
+
+# ---------------- LOGIN / ADMIN ---------------- #
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -182,6 +273,6 @@ def admin():
     today_question_count = get_today_question_count()
     return render_template("admin_panel.html", question_count=today_question_count)
 
-# ---------------- Main ---------------- #
+# ---------------- MAIN ---------------- #
 if __name__ == "__main__":
     app.run(debug=True)
