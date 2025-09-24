@@ -5,8 +5,8 @@ import bcrypt
 import os
 from datetime import datetime, timedelta
 import sqlite3
-import requests
 import json
+import random
 
 # Import Zhipu AI
 from zai import ZhipuAiClient
@@ -25,22 +25,14 @@ ADMIN_HASHED_PASSWORD = os.getenv("ADMIN_HASHED_PASSWORD", "").encode("utf-8")
 ZHIPU_API_KEY = os.getenv("ZHIPU_API_KEY")
 client = ZhipuAiClient(api_key=ZHIPU_API_KEY)
 
-# ---------------- Load Dataset JSON ---------------- #
-dataset_busana_data = {}
-try:
-    with open("dataset_busana.json", "r", encoding="utf-8") as f:
-        dataset_busana_data = json.load(f)
-except Exception as e:
-    print("⚠️ Gagal load dataset_busana.json:", e)
 
-# ---------------- Load Dataset JSONL ---------------- #
-dataset_faq = []
+# ---------------- Load Dataset JSON (Bendera) ---------------- #
+dataset_bendera_data = {}
 try:
-    with open("dataset_busana.jsonl", "r", encoding="utf-8") as f:
-        for line in f:
-            dataset_faq.append(json.loads(line.strip()))
+    with open("dataset_bendera.json", "r", encoding="utf-8") as f:
+        dataset_bendera_data = json.load(f)
 except Exception as e:
-    print("⚠️ Gagal load dataset_busana.jsonl:", e)
+    print("⚠️ Gagal load dataset_bendera.json:", e)
 
 # ---------------- Database Setup ---------------- #
 def get_db():
@@ -83,28 +75,43 @@ def get_today_question_count():
 # ---------------- Helpers ---------------- #
 def verify_password(input_password, stored_hash):
     return bcrypt.checkpw(input_password.encode('utf-8'), stored_hash)
+jawaban_variasi = [
+    "Kalau {fakultas} itu warnanya {warna} bro 🎨😉",
+    "Untuk {fakultas}, warna benderanya {warna}, mantap kan!",
+    "🚀 Fakultas {fakultas} punya identitas warna {warna}, biar gampang dikenali.",
+    "Yup, {fakultas} pakai warna {warna} sebagai ciri khasnya.",
+    "Bendera {fakultas} selalu identik dengan warna {warna} ✨",
+    "Warna {warna} tuh ciri khas Fakultas {fakultas}, gampang diingat kan?",
+    "Fakultas {fakultas} biasanya tampil dengan warna {warna} 🎨",
+    "Asik, {fakultas} punya bendera warna {warna}, keren kan?",
+    "Bro, kalau ngomongin {fakultas}, benderanya {warna} nih!",
+    "Buat {fakultas}, warna {warna} udah jadi trademark mereka 🔥",
+    "Eh, {fakultas} tuh identik sama warna {warna}, inget ya!",
+    "Mantap, {fakultas} pakai {warna} buat benderanya 💡",
+    "Gampang deh ngenalin {fakultas}, soalnya warnanya {warna}",
+    "🎉 {fakultas} itu warnanya {warna}, jelas banget deh!",
+    "Fakultas {fakultas}? Benderanya {warna}, gampang diingat!",
+    "Kalau liat {warna}, langsung kepikiran Fakultas {fakultas} 😎",
+    "Bendera {fakultas} selalu identik dengan {warna} loh!",
+    "Bro, {fakultas} pakai {warna} biar gampang dikenali 🌈",
+    "Fakultas {fakultas} terkenal dengan bendera warna {warna} 💫",
+    "Jangan lupa, {fakultas} tuh warnanya {warna} ya!"
+]
 
+def get_jawaban(fakultas, warna):
+    template = random.choice(jawaban_variasi)
+    return template.format(fakultas=fakultas, warna=warna)
 
-    if any(keyword in msg for keyword in ["tata busana", "toga", "samir"]):
-        pasal_4 = dataset_busana_data.get("pasal_4", {})
-        return (
-            f"📌 **Aturan Tata Busana UNDIP 2025**\n\n"
-            f"**{dataset_busana_data.get('judul','')}**\n\n"
-            f"**Pasal 4:**\n"
-            f"- {pasal_4.get('toga','')}\n"
-            f"- {pasal_4.get('topi','')}\n"
-            f"- {pasal_4.get('samir','')}\n\n"
-            "🎨 **Warna Bendera Fakultas:**\n" +
-            "\n".join([f"- {fak}: {warna}" for fak, warna in pasal_4.get("warna_fakultas", {}).items()])
-        )
-    return None
-
-def handle_dataset_jsonl(message: str):
+# ---------------- Dataset Handlers ---------------- #
+def handle_dataset_bendera(message: str):
     msg = message.lower()
-    for item in dataset_faq:
-        if item["messages"][0]["content"].lower() in msg:
-            return item["messages"][1]["content"]
+    for item in dataset_bendera_data.get("bendera_fakultas", []):
+        nama_fakultas = item.get("nama_fakultas", "").lower()
+        warna = item.get("bendera", "")
+        if nama_fakultas in msg or warna.lower() in msg:
+            return get_jawaban(item.get("nama_fakultas", ""), warna)
     return None
+
 
 def handle_zhipu_ai(user_message: str):
     try:
@@ -116,8 +123,7 @@ def handle_zhipu_ai(user_message: str):
                     "content": (
                         "Lo sekarang jadi chatbot akademik Universitas Diponegoro (UNDIP). "
                         "Jawaban lo wajib pake bahasa santai, gaul, ala anak muda jaman sekarang 🤙, "
-                        "tapi tetep sopan, singkat, jelas, dan gak keluar konteks akademik. "
-                        "Lo cuma boleh jawab pertanyaan yang nyangkut sama UNDIP doang."
+                        "tapi tetep sopan, singkat, jelas, dan gak keluar konteks akademik."
                     ),
                 },
                 {"role": "user", "content": user_message}
@@ -129,17 +135,12 @@ def handle_zhipu_ai(user_message: str):
         return response.choices[0].message.content.strip()
     except Exception as e:
         print("Error Zhipu:", e)
-        return "⚠️ Maaf bro, ada error pas ngubungin server Zhipu AI 🙏"
+        return "⚠️ Maaf bro, ada error pas kita ngehubungin Server🙏"
 
 def get_undip_response(user_message: str):
-    reply = handle_dataset_json(user_message)
+    reply = handle_dataset_bendera(user_message)
     if reply:
         return reply
-
-    reply = handle_dataset_jsonl(user_message)
-    if reply:
-        return reply
-
     return handle_zhipu_ai(user_message)
 
 # ---------------- Routes ---------------- #

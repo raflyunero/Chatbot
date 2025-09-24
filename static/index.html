@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Chat Widget Styles */
         .chat-widget {
             position: fixed;
             bottom: 20px;
@@ -180,7 +179,6 @@
             }
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .chat-container {
                 width: 300px;
@@ -193,17 +191,14 @@
 
   <div class="chatbot-container">
 
-    <!-- Header -->
     <div class="header">
       <img src="logo.png" alt="Logo Universitas Diponegoro" style="height: 80px; margin-right: 20px;">
       <h1>🎓 Chatbot Akademik UNDIP</h1>
       <button type="button" onclick="clearChat()" class="clear-btn">Clear</button>
     </div>
 
-    <!-- Chat Body -->
     <div id="chatBody" class="chat-body"></div>
 
-    <!-- Input Area -->
     <div class="input-area">
       <input 
         id="userInput"
@@ -217,7 +212,6 @@
 
   </div>
 
-  <!-- Chat Widget -->
   <div class="chat-widget">
     <button class="chat-button" id="chatButton">
       <i class="fas fa-comments"></i>
@@ -256,11 +250,9 @@
   <script src="script.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Set current time for bot message
         const now = new Date();
         document.getElementById('botTime1').textContent = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
         
-        // Chat widget functionality
         const chatButton = document.getElementById('chatButton');
         const chatContainer = document.getElementById('chatContainer');
         const chatClose = document.getElementById('chatClose');
@@ -269,7 +261,6 @@
         const widgetChatSend = document.getElementById('widgetChatSend');
         const typingIndicator = document.getElementById('typingIndicator');
         
-        // Toggle chat container - membuka dan menutup widget
         chatButton.addEventListener('click', function() {
             if (chatContainer.style.display === 'flex') {
                 chatContainer.style.display = 'none';
@@ -283,12 +274,10 @@
             chatContainer.style.display = 'none';
         });
         
-        // Send message function for widget
         function sendWidgetMessage() {
             const message = widgetChatInput.value.trim();
             if (message === '') return;
             
-            // Add user message
             const userMessage = document.createElement('div');
             userMessage.className = 'message user';
             userMessage.innerHTML = `
@@ -299,7 +288,6 @@
             `;
             widgetChatBody.appendChild(userMessage);
             
-            // Clear input
             widgetChatInput.value = '';
             
             // Scroll to bottom
