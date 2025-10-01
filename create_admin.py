@@ -1,30 +1,35 @@
+import bcrypt
 from werkzeug.security import generate_password_hash
+print(generate_password_hash("BORIGANTENG"))
 import sqlite3
 
-# Define the username and password you want to insert
+# Data admin
 username = 'admin'
-password = 'iniadminUNDIP'
-# Hash the password
-hashed_password = generate_password_hash(password)
+password = 'BORIGANTENG'
 
-# Connect to the SQLite database
+# Hash password dengan bcrypt
+hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+# Connect ke SQLite
 conn = sqlite3.connect("C:\\Chatbot\\database_chatbot.db")
 cursor = conn.cursor()
 
-# Create the admin table if it doesn't exist (run this once)
+# Buat tabel admin jika belum ada
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS admin (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT NOT NULL,
+    username TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL
 )
 """)
 
-# Insert the username and hashed password into the admin table
+# Hapus data lama dengan username yang sama (jika ada)
+cursor.execute("DELETE FROM admin WHERE username = ?", (username,))
+
+# Insert admin baru
 cursor.execute("INSERT INTO admin (username, password) VALUES (?, ?)", (username, hashed_password))
 
-# Commit and close the connection
 conn.commit()
 conn.close()
 
-print("Admin password has been successfully hashed and stored!")
+print(f"✅ Admin '{username}' berhasil dibuat dengan password yang sudah di-hash bcrypt!")
