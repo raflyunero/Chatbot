@@ -1,3 +1,7 @@
+// ==================================================
+// Chatbot JS
+// ==================================================
+
 function handleKey(event) {
     if (event.key === "Enter") sendMessage();
 }
@@ -8,13 +12,12 @@ function markdownToHTML(text) {
     let html = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
 
     // Ubah angka urut menjadi <ol><li>
-    // Contoh: "1. Fakultas Hukum" menjadi list
-    let lines = html.split(/\n|(?=\d+\.\s)/g); // pecah per baris / nomor
+    let lines = html.split("\n");
     let olStarted = false;
     let newLines = [];
 
     lines.forEach(line => {
-        if (/^\d+\.\s/.test(line)) { // jika diawali angka
+        if (/^\d+\.\s/.test(line)) {
             if (!olStarted) {
                 newLines.push('<ol>');
                 olStarted = true;
@@ -29,8 +32,8 @@ function markdownToHTML(text) {
             newLines.push(line);
         }
     });
-    if (olStarted) newLines.push('</ol>');
 
+    if (olStarted) newLines.push('</ol>');
     return newLines.join('');
 }
 
@@ -41,6 +44,7 @@ async function sendMessage() {
 
     const chatBody = document.getElementById("chatBody");
 
+    // Tambah pesan user
     const userMsg = document.createElement("div");
     userMsg.className = "message user-message";
     userMsg.textContent = message;
@@ -48,6 +52,7 @@ async function sendMessage() {
 
     input.value = "";
 
+    // Tambah pesan typing
     const typingMsg = document.createElement("div");
     typingMsg.className = "message typing-message";
     typingMsg.textContent = "Mengetik...";
@@ -88,9 +93,9 @@ function clearChat() {
     const botMsg = document.createElement("div");
     botMsg.className = "message bot-message";
     botMsg.innerHTML = "Hai DIPS, ada yang bisa saya bantu?";
-    botMessage.innerHTML = response.reply;
     chatBody.appendChild(botMsg);
     chatBody.scrollTop = chatBody.scrollHeight; 
 }
 
+// Jalankan saat load page
 window.onload = clearChat;
